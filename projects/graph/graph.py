@@ -124,17 +124,17 @@ class Graph:
         starting_vertex to destination_vertex in
         depth-first order.
         """
-        # Create an empty queue and enqueue A PATH TO the starting vertex ID
+        # Create an empty stack and push A PATH TO the starting vertex ID
         s = Stack()
         s.push([starting_vertex_id])
 
         # Create a Set to store visited vertices
         visited = set()
 
-        # While the queue is not empty...
+        # While the stack is not empty...
         while s.size() > 0:
 
-            # Dequeue the first PATH
+            # pop the first PATH
             path = s.pop()
 
             # Grab the last vertex from the PATH
