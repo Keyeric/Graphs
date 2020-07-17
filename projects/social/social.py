@@ -1,3 +1,4 @@
+import time
 import random
 import collections
 class User:
@@ -6,21 +7,29 @@ class User:
 
 class SocialGraph:
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self.last_id = 0
         self.users = {}
         self.friendships = {}
+
 
     def add_friendship(self, user_id, friend_id):
         """
         Creates a bi-directional friendship
         """
         if user_id == friend_id:
-            print("WARNING: You cannot be friends with yourself")
+            # print("WARNING: You cannot be friends with yourself")
+            return False
         elif friend_id in self.friendships[user_id] or user_id in self.friendships[friend_id]:
-            print("WARNING: Friendship already exists")
+            # print("WARNING: Friendship already exists")
+            return False
         else:
             self.friendships[user_id].add(friend_id)
             self.friendships[friend_id].add(user_id)
+        
+        return True
 
     def add_user(self, name):
         """
@@ -41,9 +50,7 @@ class SocialGraph:
         The number of users must be greater than the average number of friendships.
         """
         # Reset graph
-        self.last_id = 0
-        self.users = {}
-        self.friendships = {}
+        self.reset()
 
         # Add users
         for i in range(num_users):
@@ -52,13 +59,18 @@ class SocialGraph:
         # Create friendships
         total_friendships = num_users * avg_friendships
         added_friendships = 0
+        collisions = 0
         while added_friendships < total_friendships:
             user_id_1 = random.randint(1, self.last_id)
             user_id_2 = random.randint(1, self.last_id)
 
-            if user_id_1 != user_id_2 and user_id_2 not in self.friendships[user_id_1]:
-                self.add_friendship(user_id_1, user_id_2)
+            # if user_id_1 != user_id_2 and user_id_2 not in self.friendships[user_id_1]:
+            if self.add_friendship(user_id_1, user_id_2):
                 added_friendships += 2
+            else:
+                collisions += 1
+
+        # print(f"Collisions: {collisions}")
 
     def get_all_social_paths(self, user_id):
         """
@@ -70,16 +82,29 @@ class SocialGraph:
         The key is the friend's ID and the value is the path.
         """
         visited = {}  # Note that this is a dictionary, not a set
+        # visited = {}  # Note that this is a dictionary, not a set
         path_queue = collections.deque()
+        # q = Queue()
         path_queue.append([user_id])
+        # q.enqueue([user_id])
         while path_queue:
+        # while q.size() > 0:
             path = path_queue.popleft()
+            # path = q.dequeue()
             friend_id = path[-1]
+            # u = path[-1]
+
+            # if u not in visited:
+                # visited[u] = path
+
             for id in self.friendships[friend_id]:
+                # for neighbor in self.friendships[u]:
                 if id not in visited:
                     new_path = path.copy()
+                    # path_copy = list(path)
                     new_path.append(id)
                     path_queue.append(new_path)
+                    # path_copy.append(neighbor)
                     visited[friend_id] = path
 
         # Figure out the number of friends / number of total users -1 to get percentage of users connected
@@ -102,7 +127,10 @@ class SocialGraph:
 
 if __name__ == '__main__':
     sg = SocialGraph()
+    start_time = time.time()
     sg.populate_graph(10000, 5)
+    end_time = time.time()
+    # print(f"Runtime: {end_time - start_time:0.2f}")
     # print(sg.friendships)
     connections = sg.get_all_social_paths(1)
     # print(connections)
